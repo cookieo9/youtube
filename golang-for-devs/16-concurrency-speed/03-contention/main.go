@@ -13,12 +13,11 @@ func SumConcurrent(nums []int64, chunkSize int) int64 {
 	chunk := 0
 
 	for start := 0; start < len(nums); start += chunkSize {
-		end := start + chunkSize
-		if end > len(nums) {
-			end = len(nums)
-		}
+		end := min(start + chunkSize, len(nums))
 
-		chunk := chunk
+		// grab a copy of the chunk value for the goroutine before moving on
+		chunkId := chunk
+		chunk++
 
 		wg.Go(func() {
 			total := int64(0)
@@ -26,7 +25,7 @@ func SumConcurrent(nums []int64, chunkSize int) int64 {
 				total += nums[i]
 			}
 
-			chunkTotal[chunk] = total
+			chunkTotal[chunkId] = total
 		})
 
 		chunk++
