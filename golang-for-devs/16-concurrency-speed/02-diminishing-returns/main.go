@@ -17,7 +17,7 @@ func Work(x int64) int64 {
 func SumSequential(nums []int64) int64 {
 	total := int64(0)
 	for _, n := range nums {
-		total = Work(n)
+		total += Work(n)
 	}
 
 	return total
@@ -31,12 +31,11 @@ func SumConcurrent(nums []int64, chunkSize int) int64 {
 	chunk := 0
 
 	for start := 0; start < len(nums); start += chunkSize {
-		end := start + chunkSize
-		if end > len(nums) {
-			end = len(nums)
-		}
+		end := min(start + chunkSize, len(nums))
 
-		chunk := chunk
+		// grab a copy of the chunk value for goroutine before moving on
+		chunkId := chunk
+		chunk++
 
 		wg.Go(func() {
 			total := int64(0)
@@ -44,10 +43,8 @@ func SumConcurrent(nums []int64, chunkSize int) int64 {
 				total += Work(nums[i])
 			}
 
-			chunkTotal[chunk] = total
+			chunkTotal[chunkId] = total
 		})
-
-		chunk++
 	}
 
 	wg.Wait()
